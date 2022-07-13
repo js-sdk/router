@@ -1,0 +1,26 @@
+{
+  "name": "js-sdk-router",
+  "version": "1.0.0",
+  "description": "Micro event router.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/js-sdk/router.git"
+  },
+  "keywords": [
+    "router"
+  ],
+  "author": "Bruno Dias",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/js-sdk/router/issues"
+  },
+  "homepage": "https://github.com/js-sdk/router#readme",
+  "devDependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.2.212",
+    "jest": "^28.1.2",
+    "jest-environment-jsdom": "^28.1.2",
+    "js-sdk-vdom": "^2.0.0"
+  }
+}
