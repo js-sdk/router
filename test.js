@@ -18,11 +18,11 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router({
-      '/': route(tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
+      '/': route(tag(ROUTE_1_UPDATE), tag(ROUTE_1_ENTER), tag(ROUTE_1_EXIT)),
     });
 
     r('/');
-    expect(tags).toEqual([ROUTE_1_UPDATE, ROUTE_1_ENTER]);
+    expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE]);
   });
 
   it('exiting and entering a route', () => {
