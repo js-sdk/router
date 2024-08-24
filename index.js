@@ -1,7 +1,7 @@
 function noop() {}
 
-function route(update = noop, enter = noop,  exit = noop, nest = null) {
-  return { enter, update, exit, nest };
+function route(update = noop, enter = noop,  exit = noop) {
+  return { enter, update, exit };
 }
 
 const EXIT = 2;
@@ -9,16 +9,16 @@ const ENTER = 1;
 const UPDATE = 0;
 
 function router(routes) {
-  let stack = null;
+  let current = null;
 
   return function(url) {
-    let state = (stack === 0) ?
+    let state = (!current) ?
 	1 :
-	((stack != url) + (!!stack));
+	((current !== url) + (!!current));
     const route = routes[url];
     switch (state) {
-    case EXIT: (routes[stack].exit(), stack = null);
-    case ENTER: (route.enter(), stack = url);
+    case EXIT: (routes[current].exit(), current = null);
+    case ENTER: (route.enter(), current = url);
     case UPDATE: route.update();
     }
   };
