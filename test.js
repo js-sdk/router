@@ -21,8 +21,8 @@ describe('building routes', () => {
     const { path, segments, enter, update, exit } =
       route(
         '/',
-        tag(ROUTE_1_UPDATE),
         tag(ROUTE_1_ENTER),
+        tag(ROUTE_1_UPDATE),
         tag(ROUTE_1_EXIT)
       );
 
@@ -40,8 +40,8 @@ describe('building routes', () => {
     const { path, segments, enter, update, exit } =
       route(
         '/a/b/c',
-        tag(ROUTE_1_UPDATE),
         tag(ROUTE_1_ENTER),
+        tag(ROUTE_1_UPDATE),
         tag(ROUTE_1_EXIT)
       );
 
@@ -58,9 +58,21 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router(
-      route('/', tag(ROUTE_1_UPDATE), tag(ROUTE_1_ENTER), tag(ROUTE_1_EXIT)),
+      route('/', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
     );
 
+    r('/');
+    expect(tags).toEqual([ROUTE_1_ENTER]);
+  });
+
+  it('entering and update a route', () => {
+    const tags = [];
+    function tag(t) { return function () { tags.push(t); } }
+    const r = router(
+      route('/', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
+    );
+
+    r('/');
     r('/');
     expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE]);
   });
@@ -69,11 +81,12 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router(
-      route('/a', tag(ROUTE_1_UPDATE), tag(ROUTE_1_ENTER), tag(ROUTE_1_EXIT)),
-      route('/b', tag(ROUTE_2_UPDATE), tag(ROUTE_2_ENTER), tag(ROUTE_2_EXIT)),
+      route('/a', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
+      route('/b', tag(ROUTE_2_ENTER), tag(ROUTE_2_UPDATE), tag(ROUTE_2_EXIT)),
     );
-
     r('/a');
+    r('/a');
+    r('/b');
     r('/b');
 
     expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE, ROUTE_1_EXIT, ROUTE_2_ENTER, ROUTE_2_UPDATE]);
@@ -88,11 +101,11 @@ describe('using router', () => {
       }
     }
     const r = router(
-      route('/:id/a/:p', tag(ROUTE_1_UPDATE), tag(ROUTE_1_ENTER), tag(ROUTE_1_EXIT)),
+      route('/:id/a/:p', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
     );
 
     r('/1/a/a');
-    expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE]);
+    expect(tags).toEqual([ROUTE_1_ENTER]);
   });
 
   it('matching a route with params must discard the params after leave', () => {
@@ -104,11 +117,13 @@ describe('using router', () => {
       }
     }
     const r = router(
-      route('/:id/a/:p', tag(ROUTE_1_UPDATE), tag(ROUTE_1_ENTER), tag(ROUTE_1_EXIT)),
-      route('/', tag(ROUTE_2_UPDATE, false), tag(ROUTE_2_ENTER, false), tag(ROUTE_2_EXIT, false)),
+      route('/:id/a/:p', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
+      route('/', tag(ROUTE_2_ENTER, false), tag(ROUTE_2_UPDATE, false), tag(ROUTE_2_EXIT, false)),
     );
 
     r('/1/a/a');
+    r('/1/a/a');
+    r('/');
     r('/');
     expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE, ROUTE_1_EXIT, ROUTE_2_ENTER, ROUTE_2_UPDATE]);
   })

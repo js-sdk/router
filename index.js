@@ -4,7 +4,7 @@ function segmentUri(uri) {
   return uri.slice(1).split('/').filter(x => !!x);
 }
 
-function route(uri, update = noop, enter = noop,  exit = noop) {
+function route(uri, enter = noop, update = noop, exit = noop) {
   return {
     path: uri,
     segments: segmentUri(uri),
@@ -44,28 +44,29 @@ function matchRoute(routes, uri) {
   return [];
 }
 
-const EXIT = 2;
-const ENTER = 1;
-const UPDATE = 0;
+const ENTER = 0;
+const UPDATE = 3;
+const EXIT = 1;
 
 function router(...routes) {
   let currentRoute = null;
   let currentParams = null;
 
   return function(uri) {
-    let state = currentRoute ?
-	(currentRoute.path !== uri) + (!!currentRoute) : 1;
     const [route, params] = matchRoute(routes, uri);
+    let state = +(Boolean(currentRoute)) +
+        (+(Boolean(currentRoute && currentRoute.path === route.path)) *  2);
     switch (state) {
     case EXIT: (
       currentRoute && currentRoute.exit(currentParams),
       currentRoute = null,
       currentParams = null
     );
-    case ENTER: (
+    case ENTER: return (
       route.enter(params),
       currentRoute = route,
-      currentParams = params
+      currentParams = params,
+      null
     );
     case UPDATE: currentRoute.update(currentParams);
     }
