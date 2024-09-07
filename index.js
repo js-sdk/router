@@ -14,6 +14,12 @@ function route(uri, enter = noop, update = noop, exit = noop) {
   };
 }
 
+const emptyURI = "";
+
+function wildcardRoute(enter = noop, update = noop, exit = noop) {
+  return route(emptyURI, enter, update, exit);
+}
+
 function match(segments, uri) {
   const uriSegments = segmentUri(uri);
   if (segments.length !== uriSegments.length) {
@@ -34,43 +40,43 @@ function match(segments, uri) {
   return [true, params];
 }
 
-function matchRoute(routes, uri) {
+function matchRoute(routes, uri, wildcard) {
   for (let route of routes) {
     const [matched, params] = match(route.segments, uri);
     if (matched) {
       return [route, params];
     }
   }
-  return [];
+  return wildcard ? [wildcard, {}] : [];
 }
 
 const ENTER = 0;
 const UPDATE = 3;
 const EXIT = 1;
 
-function router(...routes) {
+function router(wildcard, ...routes) {
   let currentRoute = null;
   let currentParams = null;
 
-  return function(uri) {
-    const [route, params] = matchRoute(routes, uri);
+  return function (uri) {
+    const [route, params] = matchRoute(routes, uri, wildcard);
     let state = +(Boolean(currentRoute)) +
-        (+(Boolean(currentRoute && currentRoute.path === route.path)) *  2);
+      (+(Boolean(currentRoute && currentRoute.path === route.path)) * 2);
     switch (state) {
-    case EXIT: (
-      currentRoute && currentRoute.exit(currentParams),
-      currentRoute = null,
-      currentParams = null
-    );
-    case ENTER: return (
-      route.enter(params),
-      currentRoute = route,
-      currentParams = params,
-      null
-    );
-    case UPDATE: currentRoute.update(currentParams);
+      case EXIT: (
+        currentRoute && currentRoute.exit(currentParams),
+        currentRoute = null,
+        currentParams = null
+      );
+      case ENTER: return (
+        route.enter(params),
+        currentRoute = route,
+        currentParams = params,
+        null
+      );
+      case UPDATE: currentRoute.update(currentParams);
     }
   };
 }
 
-module.exports = { router, route };
+module.exports = { router, route, wildcardRoute };

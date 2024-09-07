@@ -1,6 +1,6 @@
 /* @jest-environment jsdom */
 
-const { router, route } = require('./index.js');
+const { router, route, wildcardRoute } = require('./index.js');
 const { T, N, patch } = require('js-sdk-vdom');
 
 function noop() {}
@@ -58,6 +58,7 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router(
+      null,
       route('/', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
     );
 
@@ -69,6 +70,7 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router(
+      null,
       route('/', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
     );
 
@@ -81,6 +83,7 @@ describe('using router', () => {
     const tags = [];
     function tag(t) { return function () { tags.push(t); } }
     const r = router(
+      null,
       route('/a', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
       route('/b', tag(ROUTE_2_ENTER), tag(ROUTE_2_UPDATE), tag(ROUTE_2_EXIT)),
     );
@@ -101,6 +104,7 @@ describe('using router', () => {
       }
     }
     const r = router(
+      null,
       route('/:id/a/:p', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
     );
 
@@ -117,6 +121,7 @@ describe('using router', () => {
       }
     }
     const r = router(
+      null,
       route('/:id/a/:p', tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
       route('/', tag(ROUTE_2_ENTER, false), tag(ROUTE_2_UPDATE, false), tag(ROUTE_2_EXIT, false)),
     );
@@ -126,7 +131,26 @@ describe('using router', () => {
     r('/');
     r('/');
     expect(tags).toEqual([ROUTE_1_ENTER, ROUTE_1_UPDATE, ROUTE_1_EXIT, ROUTE_2_ENTER, ROUTE_2_UPDATE]);
-  })
+  });
+
+  it('trigger wildcard route when no route was matched', () => {
+    const tags = [];
+    function tag(t) {
+      return function (params) {
+        expect(params).toStrictEqual({});
+        tags.push(t);
+      }
+    }
+
+    const text = "must not enter";
+    const r = router(
+      wildcardRoute(tag(ROUTE_1_ENTER), tag(ROUTE_1_UPDATE), tag(ROUTE_1_EXIT)),
+      route('/a', tag(text), tag(text), tag(text)),
+    );
+
+    r('/b');
+    expect(tags).toEqual([ROUTE_1_ENTER]);
+  });
 });
 
 describe('rendering test', () => {
@@ -144,6 +168,7 @@ describe('rendering test', () => {
   }
 
   const r = router(
+    null,
     route('/a', () => app(list)),
     route('/b', () => app(image))
   );
